@@ -54,7 +54,7 @@ def compile_data(stocks,col_label,tickers):
 	compiled=pd.DataFrame()
 	for count,ticker in enumerate(tickers):
 		stock=stocks[ticker]
-		stock.set_index('Date',inplace=True)
+		#stock.set_index('Date',inplace=True)
 		col=list(stock)
 		col.remove(col_label)
 		stock.rename(columns={col_label:ticker},inplace=True)

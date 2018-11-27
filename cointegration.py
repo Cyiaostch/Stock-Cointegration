@@ -1,5 +1,3 @@
-from dminer import *
-from dmanipulator import *
 import os
 import matplotlib.pyplot as plt
 import pickle
@@ -32,7 +30,7 @@ def optimize(metric,variables,learning_rate=0.01,iterations=100):
 	for i in range(len(weights)):
 		update_history[i]=[]
         
-	for iteration in trace(range(iterations)):
+	for iteration in range(iterations):
 		updated_weights=[weight for weight in weights]
         
 		steps=[]

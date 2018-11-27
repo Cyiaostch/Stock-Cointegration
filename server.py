@@ -7,6 +7,8 @@ from flask import Flask, jsonify, request, make_response
 import jwt 
 import datetime
 from functools import wraps
+import cointegration
+import data_fetching
 
 app = Flask(__name__)
 
@@ -33,22 +35,19 @@ def token_required(f):
 # Fungsi ini digunakan untuk menukar username dan password dengan token
 @app.route('/login/<username>/<password>/')
 def login(username,password):
-	if username=="username" and password=='password':
+	if username=="myusername" and password=='mypassword':
 		token = jwt.encode({'user' : username, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=1)}, app.config['SECRET_KEY'])
 
 		return jsonify({'token':token.decode('UTF-8')})
 
 	return jsonify({'token':"INVALID"})
 
-@app.route('/getData/<tickers>/<start_date>/<end_date>/')
-@token_required
-def get_data(tickers,start_date,end_date):
-	#tickers=request.args.get("tickers").split(',')
-	#start_date=request.args.get("start_date")
-	#end_date=request.args.get("end_date")
-
-	return "Success"
-	tickers=tickers.split(',')
+@app.route('/getResult/<tickers>/<start_date>/<end_date>/')
+#@token_required
+def getResult(tickers,start_date,end_date):
+	tickers=tickers.split(",")
+	start_date=start_date
+	end_date=end_date
 	response_parameters=generate_response(tickers,start_date,end_date)
 	return jsonify(
 		best_parameters=response_parameters[0],
@@ -60,16 +59,15 @@ def get_data(tickers,start_date,end_date):
 		critical_value_10=response_parameters[6])
 
 def generate_response(tickers,start_date,end_date):
-	return range(7)
-	stocks_data=get_data(tickers,start_date,end_date)
+	stocks_data=data_fetching.get_data(tickers,start_date,end_date)
     
-	compiled_stocks_data=compile_data(stocks_data,"Close",tickers)
+	compiled_stocks_data=data_fetching.compile_data(stocks_data,"Close",tickers)
     
-	optimized_portofolio=optimize_portofolio(tickers,0.01,100)
+	optimized_portofolio=cointegration.optimize_portofolio(compiled_stocks_data,0.01,100)
     
 	best_parameters,portofolio=optimized_potofolio
     
-	dicky_fuller_statistics=stationary_test(best_parameters,portofolio)
+	dicky_fuller_statistics=cointegration.stationary_test(best_parameters,portofolio)
 	test_statistics=dicky_fuller_statistics[0]
 	p_value=dicky_fuller_statistics[1]
 	critical_value_1=dicky_fuller_statistics[4]['1%']
