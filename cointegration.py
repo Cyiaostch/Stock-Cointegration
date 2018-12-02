@@ -53,13 +53,13 @@ def optimize(metric,variables,learning_rate=0.01,iterations=100):
 				updated_weights[i]=neg_step[i]
 				update_history[i].append(neg_step[i])
 		weights=[value for value in updated_weights]
-	weights=[int(value*100) for value in weights]
+	weights=[int(value*10000)//100 for value in weights]
 	return weights, update_history
 
-def optimize_portofolio(stocks,target,learning_rate=None,iterations=None):
-	cleaned_stocks=stocks.dropna(axis=1)
+def optimize_portofolio(stocks,target,learning_rate=0.01,iterations=100):
+	cleaned_stocks=stocks.dropna()
 	target=list(cleaned_stocks)
 	portofolio=[cleaned_stocks[ticker] for ticker in target]
 	best_param,update_history=optimize(stationary_p,portofolio,learning_rate,iterations)
-    
+
 	return best_param, portofolio

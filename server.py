@@ -9,6 +9,7 @@ import datetime
 from functools import wraps
 import cointegration
 import data_fetching
+import pprint
 
 app = Flask(__name__)
 
@@ -43,15 +44,15 @@ def login(username,password):
 	return jsonify({'token':"INVALID"})
 
 @app.route('/getResult/<tickers>/<start_date>/<end_date>/')
-#@token_required
+@token_required
 def getResult(tickers,start_date,end_date):
 	tickers=tickers.split(",")
 	start_date=start_date
 	end_date=end_date
 	response_parameters=generate_response(tickers,start_date,end_date)
 	return jsonify(
+		tickers=tickers,
 		best_parameters=response_parameters[0],
-		portofolio=response_parameters[1],
 		test_statistics=response_parameters[2],
 		p_value=response_parameters[3],
 		critical_value_1=response_parameters[4],
@@ -60,13 +61,11 @@ def getResult(tickers,start_date,end_date):
 
 def generate_response(tickers,start_date,end_date):
 	stocks_data=data_fetching.get_data(tickers,start_date,end_date)
-    
 	compiled_stocks_data=data_fetching.compile_data(stocks_data,"Close",tickers)
+	optimized_portofolio=cointegration.optimize_portofolio(compiled_stocks_data,tickers,0.01,100)
+	best_parameters,portofolio=optimized_portofolio
     
-	optimized_portofolio=cointegration.optimize_portofolio(compiled_stocks_data,0.01,100)
-    
-	best_parameters,portofolio=optimized_potofolio
-    
+
 	dicky_fuller_statistics=cointegration.stationary_test(best_parameters,portofolio)
 	test_statistics=dicky_fuller_statistics[0]
 	p_value=dicky_fuller_statistics[1]
