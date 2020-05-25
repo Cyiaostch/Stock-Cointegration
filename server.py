@@ -1,8 +1,3 @@
-# Framework yang digunakan untuk pembuatan API adalah Flask(Python)
-# Autentikasi yang digunakan adalah token based authentication menggunakan JWT(JSON Web Token)
-# User akan menukan username dan password dengan token yang memiliki lifetime tertenu(dalam kode ini 30 menit)
-# Token nantinya akan disertakan dalam request untuk route yang ingin diproteksi
-
 from flask import Flask, jsonify, request, make_response
 import jwt 
 import datetime
@@ -13,14 +8,12 @@ import pprint
 
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = 'thisisthesecretkey'
+app.config['SECRET_KEY'] = ''
 
-# Fungsi ini akan digunakan sebagai wrapper untuk route yang memerlukan autentikasi token
 def token_required(f):
 	@wraps(f)
 	def decorated(*args, **kwargs):
-		token = request.args.get('token') #http://127.0.0.1:5000/route?token=alshfjfjdklsfj89549834ur
-
+		token = request.args.get('token') 
 		if not token:
 			return jsonify({'message' : 'Token is missing!'}), 403
 
@@ -33,10 +26,9 @@ def token_required(f):
 
 	return decorated
 
-# Fungsi ini digunakan untuk menukar username dan password dengan token
 @app.route('/login/<username>/<password>/')
 def login(username,password):
-	if username=="myusername" and password=='mypassword':
+	if username=="" and password=='':
 		token = jwt.encode({'user' : username, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=1)}, app.config['SECRET_KEY'])
 
 		return jsonify({'token':token.decode('UTF-8')})
